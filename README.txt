@@ -93,3 +93,8 @@ Tous utilisent le même code de classe.
 
 Le client commande → le serveur voit la commande → le serveur la transmet → le pizzaiolo coche les ingrédients → la pizza passe à « prête » → le serveur la donne au client.
 
+
+
+VERSION 2
+- Cuisto : une case par unité d'ingrédient, compteur de progression et bouton PIZZA TERMINÉE.
+- Serveur : alerte visuelle + sonore lorsqu'une pizza passe à l'état prête.

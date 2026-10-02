@@ -37,6 +37,9 @@ const ingredients = [
 let app, auth, db, currentUser;
 let role = null, classCode = null, playerName = null, unsubscribe = null;
 let draft = Object.fromEntries(ingredients.map(i=>[i.id,0]));
+let cookChecks = {};
+let serverKnownStatuses = {};
+let serverAlertTimer = null;
 
 const $ = id => document.getElementById(id);
 const escapeHtml = s => String(s ?? "").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
@@ -44,6 +47,33 @@ const escapeHtml = s => String(s ?? "").replace(/[&<>"']/g, c=>({"&":"&amp;","<"
 function toast(msg){
   const t=$("toast"); t.textContent=msg; t.classList.add("show");
   setTimeout(()=>t.classList.remove("show"),2400);
+}
+function playReadySound(){
+  try{
+    const Ctx=window.AudioContext||window.webkitAudioContext;
+    if(!Ctx) return;
+    const ctx=new Ctx();
+    const now=ctx.currentTime;
+    [0,0.16,0.32].forEach((delay,idx)=>{
+      const osc=ctx.createOscillator(); const gain=ctx.createGain();
+      osc.type="sine"; osc.frequency.value=[660,880,1047][idx];
+      gain.gain.setValueAtTime(0.0001,now+delay);
+      gain.gain.exponentialRampToValueAtTime(0.18,now+delay+0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001,now+delay+0.13);
+      osc.connect(gain); gain.connect(ctx.destination); osc.start(now+delay); osc.stop(now+delay+0.14);
+    });
+    setTimeout(()=>ctx.close(),700);
+  }catch(e){}
+}
+function notifyPizzaReady(o){
+  const box=$("serverAlert");
+  if(!box) return;
+  box.innerHTML=`<div class="ready-alert"><div class="ready-alert-icon">🔔</div><div><b>Pizza prête !</b><div>La pizza de <strong>${escapeHtml(o.client)}</strong> est terminée.</div></div><button class="secondary" id="dismissReady">OK</button></div>`;
+  box.classList.add("show");
+  $("dismissReady").onclick=()=>box.classList.remove("show");
+  clearTimeout(serverAlertTimer);
+  serverAlertTimer=setTimeout(()=>box.classList.remove("show"),9000);
+  playReadySound();
 }
 function roleLabel(r){return r==="client"?"Client":r==="serveur"?"Serveur / Serveuse":"Pizzaiolo";}
 function statusLabel(s){return ({waiting:"En attente",taken:"Prise par le serveur",making:"En préparation",ready:"Pizza prête",done:"Terminée"})[s]||s;}
@@ -139,12 +169,19 @@ function renderMyOrders(list){
 }
 
 function renderServer(){
+  serverKnownStatuses={};
   $("appContent").innerHTML=`
   <div class="page-head"><div><h2>🧑‍💼 Comptoir des commandes</h2><p class="sub">Prends une commande, vérifie les quantités, puis envoie-la au pizzaiolo.</p></div></div>
+  <div id="serverAlert"></div>
   <div id="serverOrders"></div>`;
   listenOrders(renderServerOrders);
 }
 function renderServerOrders(list){
+  const previous={...serverKnownStatuses};
+  list.forEach(o=>{
+    if(previous[o.id] && previous[o.id]!=="ready" && o.status==="ready") notifyPizzaReady(o);
+    serverKnownStatuses[o.id]=o.status;
+  });
   const active=list.filter(o=>o.status!=="done");
   $("serverOrders").innerHTML=active.length?`<div class="orders">${active.map(o=>{
     let action="";
@@ -171,22 +208,43 @@ function renderPizzaiolo(){
   <div id="cookOrders"></div>`;
   listenOrders(renderCookOrders);
 }
+function cookOrderProgress(o){
+  const items=ingredients.filter(i=>Number(o.items?.[i.id]||0)>0);
+  const total=items.reduce((sum,i)=>sum+Number(o.items[i.id]||0),0);
+  if(o.status==="ready") return {done:total,total};
+  const state=cookChecks[o.id]||{};
+  const done=items.reduce((sum,i)=>sum+(state[i.id]||[]).filter(Boolean).length,0);
+  return {done,total};
+}
 function renderCookOrders(list){
   const active=list.filter(o=>o.status==="making" || o.status==="ready");
   $("cookOrders").innerHTML=active.length?`<div class="orders">${active.map(o=>{
-    const ready=ingredients.filter(i=>Number(o.items?.[i.id]||0)>0).every(i=>document.querySelector(`[data-check="${o.id}-${i.id}"]`)?.checked);
-    const rows=ingredients.filter(i=>Number(o.items?.[i.id]||0)>0).map(i=>
-      `<label class="check"><span style="font-size:25px">${i.emoji}</span><span style="flex:1"><b>${i.name}</b></span><span>× ${o.items[i.id]}</span>
-      <input type="checkbox" data-check="${o.id}-${i.id}" ${o.status==="ready"?"checked":""}></label>`).join("");
-    const action=o.status==="making"?`<button class="primary markReady" data-id="${o.id}">Pizza terminée 🍕</button>`:`<div class="notice">Pizza terminée. Le serveur peut la donner au client.</div>`;
-    return `<div class="order-card"><h3>Commande de ${escapeHtml(o.client)} <span class="status ${o.status}">${statusLabel(o.status)}</span></h3>
-      <div class="order-items">${rows}</div><div class="actions">${action}</div></div>`;
+    const progress=cookOrderProgress(o);
+    const rows=ingredients.filter(i=>Number(o.items?.[i.id]||0)>0).map(i=>{
+      const q=Number(o.items[i.id]||0);
+      const checked=o.status==="ready"?Array(q).fill(true):(cookChecks[o.id]?.[i.id]||Array(q).fill(false));
+      if(!cookChecks[o.id]) cookChecks[o.id]={};
+      if(!cookChecks[o.id][i.id]) cookChecks[o.id][i.id]=checked.slice(0,q);
+      return `<div class="cook-item"><div class="cook-item-head"><span class="cook-food">${i.emoji}</span><b>${i.name}</b><span class="cook-qty">× ${q}</span></div><div class="unit-checks">${Array.from({length:q},(_,n)=>`<label class="unit-check"><input type="checkbox" data-unit="${o.id}-${i.id}-${n}" ${checked[n]?"checked":""} ${o.status==="ready"?"disabled":""}><span>${n+1}</span></label>`).join("")}</div></div>`;
+    }).join("");
+    const pct=progress.total?Math.round(progress.done/progress.total*100):0;
+    const action=o.status==="making"?`<button class="primary markReady big-ready" data-id="${o.id}">🟢 PIZZA TERMINÉE</button>`:`<div class="notice ready-notice">🎉 Pizza terminée. Le serveur a été prévenu.</div>`;
+    return `<div class="order-card cook-card"><h3>🍕 Pizza de ${escapeHtml(o.client)} <span class="status ${o.status}">${statusLabel(o.status)}</span></h3>
+      <div class="cook-progress"><div class="progress-label"><b>${progress.done} / ${progress.total}</b> ingrédients préparés <span>${pct}%</span></div><div class="progress-bar"><div style="width:${pct}%"></div></div></div>
+      <div class="cook-items">${rows}</div><div class="actions">${action}</div></div>`;
   }).join("")}</div>`:`<div class="empty">Aucune pizza à préparer.</div>`;
+  document.querySelectorAll("[data-unit]").forEach(input=>input.onchange=()=>{
+    const [oid,iid,n]=input.dataset.unit.split("-");
+    if(!cookChecks[oid]) cookChecks[oid]={};
+    if(!cookChecks[oid][iid]) cookChecks[oid][iid]=[];
+    cookChecks[oid][iid][Number(n)]=input.checked;
+    renderCookOrders(list);
+  });
   document.querySelectorAll(".markReady").forEach(b=>b.onclick=()=>{
     const o=list.find(x=>x.id===b.dataset.id);
-    const ok=ingredients.filter(i=>Number(o.items?.[i.id]||0)>0).every(i=>document.querySelector(`[data-check="${o.id}-${i.id}"]`)?.checked);
-    if(!ok){toast("Coche tous les ingrédients demandés.");return;}
-    update(ref(db,`classes/${classCode}/orders/${b.dataset.id}`),{status:"ready",cook:playerName}).then(()=>toast("Pizza prête !"));
+    const progress=cookOrderProgress(o);
+    if(progress.done<progress.total){toast(`Il reste ${progress.total-progress.done} ingrédient(s) à préparer.`);return;}
+    update(ref(db,`classes/${classCode}/orders/${b.dataset.id}`),{status:"ready",cook:playerName}).then(()=>toast("Pizza prête ! Le serveur est prévenu."));
   });
 }
 
