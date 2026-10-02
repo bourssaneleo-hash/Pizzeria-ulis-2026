@@ -1,0 +1,12 @@
+{
+  "rules": {
+    "classes": {
+      "$classCode": {
+        "orders": {
+          ".read": "auth != null",
+          ".write": "auth != null"
+        }
+      }
+    }
+  }
+}
