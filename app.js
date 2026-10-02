@@ -225,7 +225,7 @@ function renderCookOrders(list){
       const checked=o.status==="ready"?Array(q).fill(true):(cookChecks[o.id]?.[i.id]||Array(q).fill(false));
       if(!cookChecks[o.id]) cookChecks[o.id]={};
       if(!cookChecks[o.id][i.id]) cookChecks[o.id][i.id]=checked.slice(0,q);
-      return `<div class="cook-item"><div class="cook-item-head"><span class="cook-food">${i.emoji}</span><b>${i.name}</b><span class="cook-qty">× ${q}</span></div><div class="unit-checks">${Array.from({length:q},(_,n)=>`<label class="unit-check"><input type="checkbox" data-unit="${o.id}-${i.id}-${n}" ${checked[n]?"checked":""} ${o.status==="ready"?"disabled":""}><span>${n+1}</span></label>`).join("")}</div></div>`;
+      return `<div class="cook-item"><div class="cook-item-head"><span class="cook-food">${i.emoji}</span><b>${i.name}</b><span class="cook-qty">× ${q}</span></div><div class="unit-checks">${Array.from({length:q},(_,n)=>`<label class="unit-check"><input type="checkbox" data-unit="${o.id}|${i.id}|${n}" ${checked[n]?"checked":""} ${o.status==="ready"?"disabled":""}><span>${n+1}</span></label>`).join("")}</div></div>`;
     }).join("");
     const pct=progress.total?Math.round(progress.done/progress.total*100):0;
     const action=o.status==="making"?`<button class="primary markReady big-ready" data-id="${o.id}">🟢 PIZZA TERMINÉE</button>`:`<div class="notice ready-notice">🎉 Pizza terminée. Le serveur a été prévenu.</div>`;
@@ -234,7 +234,7 @@ function renderCookOrders(list){
       <div class="cook-items">${rows}</div><div class="actions">${action}</div></div>`;
   }).join("")}</div>`:`<div class="empty">Aucune pizza à préparer.</div>`;
   document.querySelectorAll("[data-unit]").forEach(input=>input.onchange=()=>{
-    const [oid,iid,n]=input.dataset.unit.split("-");
+    const [oid,iid,n]=input.dataset.unit.split("|");
     if(!cookChecks[oid]) cookChecks[oid]={};
     if(!cookChecks[oid][iid]) cookChecks[oid][iid]=[];
     cookChecks[oid][iid][Number(n)]=input.checked;
