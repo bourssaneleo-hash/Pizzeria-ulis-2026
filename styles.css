@@ -64,31 +64,3 @@ footer{margin-top:25px;color:#8a8490;font-size:12px;text-align:center}
 .fraction-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .fraction-choice{min-height:48px;font-weight:700}
 @media (max-width:600px){.fraction-options{grid-template-columns:repeat(2,minmax(0,1fr))}}
-
-/* Version 4 : représentation visuelle des huitièmes */
-.pizza-fraction-overlay{
-  position:absolute;
-  inset:4%;
-  border-radius:50%;
-  z-index:6;
-  pointer-events:none;
-  background:conic-gradient(
-    rgba(255,255,255,.10) 0 calc(var(--filled) * 45deg),
-    rgba(72,48,32,.46) calc(var(--filled) * 45deg) 360deg
-  );
-  box-shadow:inset 0 0 0 2px rgba(255,255,255,.55);
-}
-.pizza-fraction-lines{
-  position:absolute;
-  inset:4%;
-  border-radius:50%;
-  z-index:7;
-  pointer-events:none;
-  background:repeating-conic-gradient(
-    from 0deg,
-    rgba(255,255,255,.85) 0deg 1.4deg,
-    transparent 1.4deg 45deg
-  );
-  -webkit-mask:radial-gradient(circle,transparent 0 95.5%,#000 96% 100%);
-  mask:radial-gradient(circle,transparent 0 95.5%,#000 96% 100%);
-}

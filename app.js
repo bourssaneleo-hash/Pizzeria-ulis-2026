@@ -101,8 +101,7 @@ function pizzaPreview(values=draft,fraction="1/1"){
       toppings.push(`<span class="pizza-topping ${i.cls}" style="left:${x}%;top:${y}%" title="${i.name}">${i.emoji}</span>`);
     }
   });
-  const filled = ({"1/1":8,"1/2":4,"1/4":2,"3/4":6,"1/8":1,"3/8":3,"5/8":5,"7/8":7}[fraction]||8);
-  const overlay=fraction!=="1/1"?`<div class="pizza-fraction-overlay" style="--filled:${filled}"></div><div class="pizza-fraction-lines"></div><div class="fraction-badge">${fractionLabel(fraction)}</div>`:"";
+  const overlay=fraction!=="1/1"?`<div class="pizza-fraction-overlay fraction-${fraction.replace('/','-')}"></div><div class="fraction-badge">${fractionLabel(fraction)}</div>`:"";
   return `<div class="pizza-stage"><div class="pizza-board"><div class="pizza-top"><div class="pizza-sauce"></div><div class="pizza-cheese"></div>${toppings.slice(0,28).join("")}<div class="pizza-highlight"></div></div>${overlay}</div></div>`;
 }
 
