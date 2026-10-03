@@ -1,12 +1,58 @@
-ULIS • activité éducative
-🍕 La Pizzeria des apprentis
-Non connecté Changer de rôle
-🍕
-Bienvenue à la pizzeria !
-Choisis ton rôle puis entre le code de la classe.
-🧑‍🍳ClientJe commande ma pizza 🧑‍💼Serveur / ServeuseJe prends les commandes 👨‍🍳PizzaioloJe prépare les pizzas 👩‍🏫EnseignantJe règle les options
-Code de la classe Prénom ou pseudo Entrer dans la pizzeria
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>La Pizzeria des apprentis</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">ULIS • activité éducative</div>
+      <h1>🍕 La Pizzeria des apprentis</h1>
+    </div>
+    <div class="session">
+      <span id="roleBadge">Non connecté</span>
+      <button id="changeRoleBtn" class="small secondary">Changer de rôle</button>
+    </div>
+  </header>
 
-Aucun nom de famille, aucune donnée personnelle : utilise seulement un prénom ou un pseudo.
+  <main>
+    <section id="loginView" class="screen active">
+      <div class="welcome card">
+        <div class="pizza-hero">🍕</div>
+        <h2>Bienvenue à la pizzeria !</h2>
+        <p>Choisis ton rôle puis entre le code de la classe.</p>
 
+        <div class="role-grid">
+          <button class="role-card" data-role="client"><span>🧑‍🍳</span><b>Client</b><small>Je commande ma pizza</small></button>
+          <button class="role-card" data-role="serveur"><span>🧑‍💼</span><b>Serveur / Serveuse</b><small>Je prends les commandes</small></button>
+          <button class="role-card" data-role="pizzaiolo"><span>👨‍🍳</span><b>Pizzaiolo</b><small>Je prépare les pizzas</small></button>
+          <button class="role-card teacher-role" data-role="enseignant"><span>👩‍🏫</span><b>Enseignant</b><small>Je règle les options</small></button>
+        </div>
 
+        <label class="field">
+          <span>Code de la classe</span>
+          <input id="classCode" inputmode="numeric" maxlength="8" placeholder="Ex. 1234">
+        </label>
+        <label class="field">
+          <span>Prénom ou pseudo</span>
+          <input id="playerName" maxlength="20" placeholder="Ex. Lina">
+        </label>
+        <button id="enterBtn" class="primary big">Entrer dans la pizzeria</button>
+        <p id="loginError" class="error"></p>
+        <p class="hint">Aucun nom de famille, aucune donnée personnelle : utilise seulement un prénom ou un pseudo.</p>
+      </div>
+    </section>
+
+    <section id="appView" class="screen">
+      <div id="appContent"></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
