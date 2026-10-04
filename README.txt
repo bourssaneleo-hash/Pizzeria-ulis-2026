@@ -1,18 +1,22 @@
-PIZZERIA ULIS - VERSION 3
+PIZZERIA ULIS 2026 — VERSION 4
 
-Nouveautés :
-- Pizza vue du dessus avec ingrédients qui s'ajoutent visuellement.
-- Mode Monnaie activable par l'enseignant : prix entiers en euros et total.
-- Mode Partage/Fractions activable : pizza entière, 1/2, 1/4, 3/4.
-- Espace Enseignant pour activer/désactiver ces deux options et régler les prix.
-- Les options sont enregistrées dans Firebase pour le code de classe.
-- Le fonctionnement Client -> Serveur -> Pizzaiolo et la notification Pizza prête sont conservés.
+Fonctionnalités :
+- Client, serveur/serveuse, pizzaiolo et enseignant
+- Pizza vue du dessus avec ingrédients
+- Suivi des quantités au pizzaiolo avec une case par unité
+- Alerte « PIZZA PRÊTE ! »
+- Mode monnaie activable par l’enseignant
+- Prix en euros entiers, sans centimes
+- Mode partage/fractions activable par l’enseignant
+- Fractions : entière, 1/2, 1/4, 3/4, 1/8, 3/8, 5/8, 7/8
+- Représentation visuelle des fractions sur la pizza
+- Paramètres enregistrés dans Firebase Realtime Database
 
-Firebase :
-- Authentification anonyme activée.
-- Realtime Database activée.
-- Les règles Firebase de ce dossier autorisent la lecture/écriture des commandes et des options pour les utilisateurs anonymes connectés.
+Fichiers :
+index.html
+app.js
+styles.css
+firebase-rules.json
 
-Déploiement : remplacer les fichiers existants sur GitHub Pages.
-
-Version 3 : mode partage étendu aux fractions 1/2, 1/4, 3/4, 1/8, 3/8, 5/8 et 7/8.
+Règles Firebase à appliquer :
+voir firebase-rules.json
