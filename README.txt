@@ -20,3 +20,8 @@ firebase-rules.json
 
 Règles Firebase à appliquer :
 voir firebase-rules.json
+
+
+CORRECTIONS :
+- Les ingrédients restent désormais à l'intérieur de la pizza.
+- L'affichage des fractions jusqu'aux huitièmes utilise des secteurs explicites, plus fiables sur les navigateurs.
